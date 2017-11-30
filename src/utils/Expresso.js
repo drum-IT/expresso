@@ -12,6 +12,7 @@ Expresso.getEmployees = () => {
       return new Promise(resolve => resolve([]));
     }
     return response.json().then(jsonResponse => {
+      console.log('thing!');
       return jsonResponse.employees.map(employee => camelcaseKeys(employee));
     });
   });

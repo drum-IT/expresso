@@ -372,7 +372,7 @@ describe('POST /api/employees', function() {
         .post('/api/employees/')
         .send({employee: newEmployee})
         .then(function() {
-          testDb.all('SELECT * FROM employee', function(error, result) {
+          testDb.all('SELECT * FROM Employee', function(error, result) {
             const employee = result.find(employee => employee.name === newEmployee.name);
             expect(employee).to.exist;
             expect(employee.id).to.exist;
