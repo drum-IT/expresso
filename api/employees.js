@@ -5,16 +5,12 @@ const timesheetsRouter = require('./timesheets');
 const sqlite3 = require('sqlite3');
 const db = new sqlite3.Database(process.env.TEST_DATABASE || './database.sqlite');
 
-// attach the request id paramater to the request body as an employeeId property
 employeesRouter.param('id', (req, res, next, id) => {
   req.employeeId = Number(id);
   next();
 });
 
-// use the timesheetsRouter module for anything timesheet related
 employeesRouter.use('/:id/timesheets', timesheetsRouter);
-
-// employee routes
 
 employeesRouter.use((req, res, next) => {
   next();
