@@ -49,7 +49,12 @@ employeesRouter.use((req, res, next) => {
 // query for and send back all employees
 employeesRouter.get(`/`, (req, res, next) => {
   db.all(`SELECT * FROM Employee WHERE Employee.is_current_employee = 1`, (err, employees) => {
-    res.status(200).send({ employees: employees });
+    if (err) {
+      res.status(500).send();
+    } else {
+      res.status(200).send({ employees: employees });
+    }
+
   });
 });
 
@@ -62,7 +67,11 @@ employeesRouter.get(`/:id`, (req, res, next) => {
 employeesRouter.post(`/`, (req, res, next) => {
   db.run(`INSERT INTO Employee (name, position, wage) VALUES ($name, $position, $wage)`, req.newEmployee, function() {
     db.get(`SELECT * FROM Employee WHERE Employee.id = ${this.lastID}`, (err, employee) => {
-      res.status(201).send({ employee: employee });
+      if (err) {
+        res.status(500).send();
+      } else {
+        res.status(201).send({ employee: employee });
+      }
     });
   });
 });
@@ -71,7 +80,11 @@ employeesRouter.post(`/`, (req, res, next) => {
 employeesRouter.put(`/:id`, (req, res, next) => {
   db.run(`UPDATE Employee SET name = $name, position = $position, wage = $wage WHERE Employee.id = ${req.employeeId}`, req.newEmployee, function() {
     db.get(`SELECT * FROM Employee WHERE Employee.id = ${req.employeeId}`, (err, employee) => {
-      res.status(200).send({ employee: employee });
+      if (err) {
+        res.status(500).send();
+      } else {
+        res.status(200).send({ employee: employee });
+      }
     });
   });
 });
@@ -80,7 +93,11 @@ employeesRouter.put(`/:id`, (req, res, next) => {
 employeesRouter.delete(`/:id`, (req, res, next) => {
   db.run(`UPDATE Employee SET is_current_employee = 0 WHERE Employee.id = ${req.employeeId}`, function() {
     db.get(`SELECT * FROM Employee WHERE Employee.id = ${req.employeeId}`, (err, employee) => {
-      res.status(200).send({ employee: employee });
+      if (err) {
+        res.status(500).send();
+      } else {
+        res.status(200).send({ employee: employee });
+      }
     });
   });
 });

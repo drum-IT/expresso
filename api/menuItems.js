@@ -28,7 +28,7 @@ menuItemsRouter.use((req, res, next) => {
     // make sure the menu item object has all of the required info
     const newMenuItem = req.body.menuItem;
     if (!newMenuItem.name || !newMenuItem.description || !newMenuItem.inventory || !newMenuItem.price) {
-      return res.status(400).send(); // send 400 if this menu item is missing required info
+      res.status(400).send(); // send 400 if this menu item is missing required info
     } else {
       // if the menu item object is valid, attach it to the request body in a SQL placeholder format
       req.newMenuItem = {
@@ -47,7 +47,11 @@ menuItemsRouter.use((req, res, next) => {
 // query for and send all menu items for the current menu
 menuItemsRouter.get(`/`, (req, res, next) => {
   db.all(`SELECT * FROM MenuItem WHERE MenuItem.menu_id = ${req.menuId}`, (err, menuItems) => {
-    res.status(200).send({ menuItems: menuItems });
+    if (err) {
+      res.status(500).send(); // send a 500 for any errors
+    } else {
+      res.status(200).send({ menuItems: menuItems });
+    }
   });
 });
 
@@ -55,7 +59,11 @@ menuItemsRouter.get(`/`, (req, res, next) => {
 menuItemsRouter.post(`/`, (req, res, next) => {
   db.run(`INSERT INTO MenuItem (name, description, inventory, price, menu_id) VALUES ($name, $description, $inventory, $price, ${req.menuId})`, req.newMenuItem, function() {
     db.get(`SELECT * FROM MenuItem WHERE MenuItem.id = ${this.lastID}`, (err, menuItem) => {
-      res.status(201).send({ menuItem: menuItem });
+      if (err) {
+        res.status(500).send(); // send a 500 for any errors
+      } else {
+        res.status(201).send({ menuItem: menuItem });
+      }
     });
   });
 });
@@ -64,7 +72,11 @@ menuItemsRouter.post(`/`, (req, res, next) => {
 menuItemsRouter.put(`/:id`, (req, res, next) => {
   db.run(`UPDATE MenuItem SET name = $name, description = $description, inventory = $inventory, price = $price WHERE MenuItem.id = ${req.menuItemId}`, req.newMenuItem, function() {
     db.get(`SELECT * FROM MenuItem WHERE MenuItem.id = ${req.menuItemId}`, (err, menuItem) => {
-      res.status(200).send({ menuItem: menuItem });
+      if (err) {
+        res.status(500).send(); // send a 500 for any errors
+      } else {
+        res.status(200).send({ menuItem: menuItem });
+      }
     });
   });
 });

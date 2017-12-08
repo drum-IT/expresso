@@ -1,6 +1,6 @@
 const express = require(`express`); // require express for routing
 const menuItemsRouter = require(`./menuItems`); // require the menuItemsRouter for menu item related requests
-const menusRouter = express.Router();// create a router for menu requests
+const menusRouter = express.Router(); // create a router for menu requests
 
 const sqlite3 = require(`sqlite3`); // import sqlite3 for database management
 const db = new sqlite3.Database(process.env.TEST_DATABASE || `./database.sqlite`); // connect to the DB file
@@ -15,7 +15,7 @@ menusRouter.param(`id`, (req, res, next, id) => {
 menusRouter.use(`/:id`, (req, res, next) => {
   db.get(`SELECT * FROM Menu WHERE Menu.id = ${req.menuId}`, (err, menu) => {
     if (!menu) {
-      res.status(404).send();  // send 404 if there is no menu with this ID.
+      res.status(404).send(); // send 404 if there is no menu with this ID.
     } else {
       req.menu = menu; // attach the menu to the request so I don't have to get it again.
       next();
@@ -47,7 +47,12 @@ menusRouter.use((req, res, next) => {
 // query for and send back all menus
 menusRouter.get(`/`, (req, res, next) => {
   db.all(`SELECT * FROM Menu`, (err, menus) => {
-    res.send({ menus: menus });
+    if (err) {
+      res.status(500).send(); // send a 500 for any errors
+    } else {
+      res.send({ menus: menus });
+    }
+
   });
 });
 
@@ -60,7 +65,11 @@ menusRouter.get(`/:id`, (req, res, next) => {
 menusRouter.post(`/`, (req, res, next) => {
   db.run(`INSERT INTO Menu (title) VALUES ($title)`, req.newMenu, function() {
     db.get(`SELECT * FROM Menu WHERE id = ${this.lastID}`, (err, menu) => {
-      res.status(201).send({ menu: menu });
+      if (err) {
+        res.status(500).send(); // send a 500 for any errors
+      } else {
+        res.status(201).send({ menu: menu });
+      }
     });
   });
 });
@@ -69,7 +78,11 @@ menusRouter.post(`/`, (req, res, next) => {
 menusRouter.put(`/:id`, (req, res, next) => {
   db.run(`UPDATE Menu SET title = $title WHERE Menu.id = ${req.menuId}`, req.newMenu, function() {
     db.get(`SELECT * FROM Menu WHERE id = ${req.menuId}`, (err, menu) => {
-      res.status(200).send({ menu: menu });
+      if (err) {
+        res.status(500).send(); // send a 500 for any errors
+      } else {
+        res.status(200).send({ menu: menu });
+      }
     });
   });
 });
@@ -78,8 +91,10 @@ menusRouter.put(`/:id`, (req, res, next) => {
 menusRouter.delete(`/:id`, (req, res, next) => {
   // query for all menu items on this menu
   db.all(`SELECT * FROM MenuItem WHERE MenuItem.menu_id = ${req.menuId}`, (err, menuItems) => {
-    if (menuItems.length > 0) {
-      return res.status(400).send(); // if there are menu items on this menu, send a 400 response
+    if (err) {
+      res.status(500).send();
+    } else if (menuItems.length > 0) {
+      res.status(400).send(); // if there are menu items on this menu, send a 400 response
     } else {
       // if there are no menu items on this menu, delete it
       db.run(`DELETE FROM Menu WHERE Menu.id = ${req.menuId}`, function() {

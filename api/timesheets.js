@@ -46,7 +46,11 @@ timesheetsRouter.use((req, res, next) => {
 // query for and send back all timesheets for current employee
 timesheetsRouter.get(`/`, (req, res, next) => {
   db.all(`SELECT * FROM Timesheet WHERE Timesheet.employee_id = ${req.employeeId}`, (err, timesheets) => {
-    res.status(200).send({ timesheets: timesheets });
+    if (err) {
+      res.status(500).send(); // send a 500 for any errors
+    } else {
+      res.status(200).send({ timesheets: timesheets });
+    }
   });
 });
 
@@ -54,7 +58,11 @@ timesheetsRouter.get(`/`, (req, res, next) => {
 timesheetsRouter.post(`/`, (req, res, next) => {
   db.run(`INSERT INTO Timesheet (hours, rate, date, employee_id) VALUES ($hours, $rate, $date, ${req.employeeId})`, req.newtimesheet, function() {
     db.get(`SELECT * FROM Timesheet WHERE Timesheet.id = ${this.lastID}`, (err, timesheet) => {
-      res.status(201).send({ timesheet: timesheet });
+      if (err) {
+        res.status(500).send(); // send a 500 for any errors
+      } else {
+        res.status(201).send({ timesheet: timesheet });
+      }
     });
   });
 });
@@ -63,7 +71,11 @@ timesheetsRouter.post(`/`, (req, res, next) => {
 timesheetsRouter.put(`/:id`, (req, res, next) => {
   db.run(`UPDATE Timesheet SET hours = $hours, rate = $rate, date = $date WHERE Timesheet.id = ${req.timesheetId}`, req.newtimesheet, function() {
     db.get(`SELECT * FROM Timesheet WHERE Timesheet.id = ${req.timesheetId}`, (err, timesheet) => {
-      res.status(200).send({ timesheet: timesheet });
+      if (err) {
+        res.status(500).send(); // send a 500 for any errors
+      } else {
+        res.status(200).send({ timesheet: timesheet });
+      }
     });
   });
 });
